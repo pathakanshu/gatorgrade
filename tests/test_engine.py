@@ -10,8 +10,13 @@ from gatorgrade.engine import (
     try_create_remote_engine,
 )
 from gatorgrade.hint.fallback import RemoteEngineAdapter
+from gatorgrade.platform_support import supports_local_auto_hints
 
 
+@pytest.mark.skipif(
+    not supports_local_auto_hints(),
+    reason="Local auto-hint engine is not supported on this platform.",
+)
 def test_create_auto_hint_engine_default_model(chdir: Any) -> None:
     """create_auto_hint_engine uses default model when sentinel is passed."""
     chdir("tests/test_assignment")
