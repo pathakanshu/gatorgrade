@@ -40,7 +40,7 @@ dependencies = [
 [project.optional-dependencies]
 auto-hint = [
     "openai>=2.44.0",
-    "torch>=2.12.1",
+    "torch>=2.12.1; sys_platform != 'darwin' or platform_machine != 'x86_64'",
     "transformers>=5.13.0",
 ]
 
