@@ -4,6 +4,7 @@ import datetime
 import json
 import os
 import re
+import sys
 from pathlib import Path
 from typing import Any, List, Tuple, Union
 from unittest.mock import MagicMock, patch
@@ -1003,10 +1004,31 @@ def test_run_gg_check_path_extraction_with_different_order() -> None:
         ],
         json_info={"check": "test"},
     )
-    print("check:",check) # noqa
+    print(
+        "check:",
+        check,
+        file=sys.__stdout__,
+        flush=True,
+    )
     result = output._run_gg_check(check)
-    print("result",result) # noqa
-    print("resultpath",result.path) # noqa
+    print(
+        "result:",
+        result,
+        file=sys.__stdout__,
+        flush=True,
+    )
+    print(
+        "result path:",
+        repr(result.path),
+        file=sys.__stdout__,
+        flush=True,
+    )
+    print(
+        "diagnostic:",
+        result.diagnostic,
+        file=sys.__stdout__,
+        flush=True,
+    )
     assert result.path == "gatorgrade/input/checks.py"
 
 
