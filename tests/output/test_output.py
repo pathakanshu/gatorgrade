@@ -1003,7 +1003,10 @@ def test_run_gg_check_path_extraction_with_different_order() -> None:
         ],
         json_info={"check": "test"},
     )
+    print("check:",check) # noqa
     result = output._run_gg_check(check)
+    print("result",result) # noqa
+    print("resultpath",result.path) # noqa
     assert result.path == "gatorgrade/input/checks.py"
 
 
