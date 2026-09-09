@@ -91,6 +91,9 @@ GatorGrade's auto-hinting feature, you need to run it with
 optional
 dependencies that support hint generation.
 
+Local auto-hints are not supported on Darwin x86_64 devices. On this platform,
+remote auto-hints remain available when `--auto-hint-url` is provided.
+
 ## Command-Line Options
 
 The following options control how GatorGrade runs:
