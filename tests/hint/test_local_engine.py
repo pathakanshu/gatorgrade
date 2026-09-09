@@ -9,7 +9,9 @@ from gatorgrade.hint.local_engine import (
     DEFAULT_MODEL_ID,
     HINT_REPETITION_PENALTY,
     HINT_TOP_P,
+    UNSUPPORTED_LOCAL_AUTO_HINT_MESSAGE,
     AutoHintEngine,
+    UnsupportedLocalAutoHintPlatformError,
     model_cache_dir,
 )
 from gatorgrade.hint.support import HINT_DIAG_TRUNCATE, HINT_FILE_LINES
@@ -440,6 +442,19 @@ class TestModelCacheDirFallback:
 
 class TestAutoHintEngineDeps:
     """Tests for dependency checking via patches."""
+
+    def test_ensure_loaded_raises_when_platform_unsupported(self) -> None:
+        """ensure_loaded rejects unsupported local auto-hint platforms."""
+        with patch(
+            "gatorgrade.hint.local_engine.supports_local_auto_hints",
+            return_value=False,
+        ):
+            engine = AutoHintEngine()
+            with pytest.raises(
+                UnsupportedLocalAutoHintPlatformError
+            ) as exc_info:
+                engine.ensure_loaded()
+        assert str(exc_info.value) == UNSUPPORTED_LOCAL_AUTO_HINT_MESSAGE
 
     def test_check_deps_raises_when_transformers_missing(self) -> None:
         """check_deps raises ImportError when transformers is missing."""
