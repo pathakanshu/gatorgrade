@@ -465,7 +465,13 @@ class TestAutoHintEngineDeps:
 
     def test_ensure_loaded_raises_when_transformers_missing(self) -> None:
         """_ensure_loaded raises ImportError when transformers missing."""
-        with patch.dict("sys.modules", {"transformers": None}, clear=False):
-            engine = AutoHintEngine()
-            with pytest.raises(ImportError, match="auto-hint"):
-                engine._ensure_loaded()
+        with patch(
+            "gatorgrade.hint.local_engine.supports_local_auto_hints",
+            return_value=True,
+        ):
+            with patch.dict(
+                "sys.modules", {"transformers": None}, clear=False
+            ):
+                engine = AutoHintEngine()
+                with pytest.raises(ImportError, match="auto-hint"):
+                    engine._ensure_loaded()
