@@ -6,7 +6,7 @@ from gatorgrade import platform_support
 
 ARCH_ARM64 = "arm64"
 SYSTEM_LINUX = "linux"
-SUPPORTED_PLATFORMS = (
+SUPPORTED_PLATFORM_CASES = (
     (platform_support.SYSTEM_DARWIN, ARCH_ARM64),
     (SYSTEM_LINUX, platform_support.ARCH_X86_64),
 )
@@ -27,7 +27,7 @@ def test_supports_local_auto_hints_rejects_darwin_x86_64(
     assert not platform_support.supports_local_auto_hints()
 
 
-@pytest.mark.parametrize(("system", "architecture"), SUPPORTED_PLATFORMS)
+@pytest.mark.parametrize(("system", "architecture"), SUPPORTED_PLATFORM_CASES)
 def test_supports_local_auto_hints_accepts_supported_platforms(
     monkeypatch: pytest.MonkeyPatch,
     system: str,
