@@ -94,7 +94,7 @@ def platform_model_cache_dir() -> Path:
     )
 
 
-class AutoHintEngine:
+class LocalAutoHintEngine:
     """Lazy-loading engine that generates hints for failing checks.
 
     The model is not downloaded or loaded when the engine is
@@ -104,7 +104,7 @@ class AutoHintEngine:
 
     Usage::
 
-        engine = AutoHintEngine()
+        engine = LocalAutoHintEngine()
         hint = engine.generate_hint(
             description="Check that hello.py exists",
             diagnostic="File not found",

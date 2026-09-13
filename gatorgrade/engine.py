@@ -1,7 +1,7 @@
 """Engine factory functions for creating auto-hint engines.
 
 Provides factory functions that create the appropriate auto-hint
-engine based on CLI arguments: either a local AutoHintEngine,
+engine based on CLI arguments: either a local LocalAutoHintEngine,
 a remote one via RemoteHintEngine, or a FallbackHintEngine that
 tries remote first and falls back to local.
 """
@@ -17,7 +17,7 @@ from gatorgrade.hint.fallback import (
 )
 from gatorgrade.hint.local_engine import (
     DEFAULT_MODEL_ID,
-    AutoHintEngine,
+    LocalAutoHintEngine,
 )
 from gatorgrade.hint.remote_engine import (
     REMOTE_API_KEY_DEFAULT,
@@ -60,9 +60,9 @@ def create_auto_hint_engine(  # noqa: PLR0913
     attempted first. If it succeeds, it is returned. If it
     fails (e.g., the URL is unreachable or the openai library is not
     installed), a warning is printed and the engine falls back
-    to a local AutoHintEngine when the platform supports one.
+    to a local LocalAutoHintEngine when the platform supports one.
 
-    When no URL is provided, a local AutoHintEngine is created
+    When no URL is provided, a local LocalAutoHintEngine is created
     directly, using the default configuration for auto-hinting. On an
     unsupported platform, a warning is printed and no engine is returned.
 
@@ -85,7 +85,7 @@ def create_auto_hint_engine(  # noqa: PLR0913
             If not provided, a new Console() is created.
 
     Returns:
-        An AutoHintEngine instance, or None if creation fails.
+        A LocalAutoHintEngine instance, or None if creation fails.
 
     """
     effective_console = console or Console()
@@ -114,7 +114,7 @@ def create_auto_hint_engine(  # noqa: PLR0913
     fallback_engine: Any = None
     if local_auto_hints_supported:
         try:
-            primary_engine = AutoHintEngine(
+            primary_engine = LocalAutoHintEngine(
                 model_id=primary_local_model,
                 system_prompt=system_prompt,
                 validation_rules=validation_rules,
@@ -122,7 +122,7 @@ def create_auto_hint_engine(  # noqa: PLR0913
         except Exception:
             primary_engine = None
         try:
-            fallback_engine = AutoHintEngine(
+            fallback_engine = LocalAutoHintEngine(
                 model_id=fallback_local_model,
                 system_prompt=system_prompt,
                 validation_rules=validation_rules,
@@ -187,7 +187,7 @@ def try_create_remote_engine(
 
     Returns the engine wrapped in an adapter that unifies the
     RemoteHintEngine interface (is_loaded, ensure_loaded, model_id,
-    generate_hint) with the existing AutoHintEngine interface.
+    generate_hint) with the existing LocalAutoHintEngine interface.
 
     Returns None if the engine cannot be created (missing deps,
     connection error, etc.).
