@@ -7,7 +7,7 @@ from gatorgrade.hint.local_engine import (
     HINT_REPETITION_PENALTY,
     HINT_TEMPERATURE,
     HINT_TOP_P,
-    AutoHintEngine,
+    LocalAutoHintEngine,
 )
 from gatorgrade.hint.remote_engine import (
     REMOTE_API_KEY_DEFAULT,
@@ -36,6 +36,6 @@ __all__ = [
     "REMOTE_HINT_TEMPERATURE",
     "REMOTE_HINT_TIMEOUT_MS",
     "REMOTE_MODEL_DEFAULT",
-    "AutoHintEngine",
+    "LocalAutoHintEngine",
     "RemoteHintEngine",
 ]

@@ -67,7 +67,7 @@ def test_create_auto_hint_engine_uses_remote_when_local_unsupported(
     monkeypatch.setattr(
         engine_module, "supports_local_auto_hints", lambda: False
     )
-    monkeypatch.setattr(engine_module, "AutoHintEngine", local_factory)
+    monkeypatch.setattr(engine_module, "LocalAutoHintEngine", local_factory)
     monkeypatch.setattr(
         engine_module, "try_create_remote_engine", remote_factory
     )
@@ -93,7 +93,7 @@ def test_create_auto_hint_engine_warns_without_supported_engine(
     monkeypatch.setattr(
         engine_module, "supports_local_auto_hints", lambda: False
     )
-    monkeypatch.setattr(engine_module, "AutoHintEngine", local_factory)
+    monkeypatch.setattr(engine_module, "LocalAutoHintEngine", local_factory)
     monkeypatch.setattr(
         engine_module, "try_create_remote_engine", remote_factory
     )
@@ -119,7 +119,7 @@ def test_create_auto_hint_engine_warns_when_local_unsupported(
     monkeypatch.setattr(
         engine_module, "supports_local_auto_hints", lambda: False
     )
-    monkeypatch.setattr(engine_module, "AutoHintEngine", local_factory)
+    monkeypatch.setattr(engine_module, "LocalAutoHintEngine", local_factory)
     result = create_auto_hint_engine(
         filename=CONFIG_PATH,
         auto_hint_model=CUSTOM_MODEL_ID,
