@@ -139,7 +139,8 @@ The following options control how GatorGrade runs:
 - `--auto-hint`, `--no-auto-hint`: Automatically generate hints for failing
   checks using a local language model. The default is to not generate hints.
   Requires the `auto-hint` extra. Use together with `--auto-hint-model` to choose
-  a different model.
+  a different model. Local auto-hints are not supported on Intel Mac (x86_64);
+  use `--auto-hint-url` for remote hints on those platforms.
 - `--auto-hint-model`: Model identifier for auto-hint generation. The default
   for local models is `Qwen/Qwen2.5-0.5B-Instruct`. The default for remote
   servers is `Qwen/Qwen3.6-35B-A3B`. This option requires `--auto-hint`.
