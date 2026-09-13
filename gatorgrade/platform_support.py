@@ -13,5 +13,6 @@ UNSUPPORTED_LOCAL_AUTO_HINT_PLATFORMS = frozenset(
 
 def supports_local_auto_hints() -> bool:
     """Return whether the current platform supports local auto-hints."""
+    # the configured torch version has no wheel for Intel Mac (x86_64 Darwin)
     current_platform = (sys.platform, platform.machine())
     return current_platform not in UNSUPPORTED_LOCAL_AUTO_HINT_PLATFORMS
