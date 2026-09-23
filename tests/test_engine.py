@@ -22,7 +22,7 @@ LOCAL_UNSUPPORTED_WARNING = (
     "Local auto-hints are not supported on this device."
 )
 REMOTE_UNAVAILABLE_WARNING = "The remote auto-hint engine could not be created"
-REMOTE_URL = "http://localhost:99999"
+REMOTE_URL = "http://localhost:9999"
 
 
 @pytest.mark.skipif(
@@ -50,7 +50,7 @@ def test_create_auto_hint_engine_with_remote_url_falls_back(
     engine = create_auto_hint_engine(
         filename=Path("gatorgrade.yml"),
         auto_hint_model="__default_model__",
-        auto_hint_url="http://localhost:99999",
+        auto_hint_url=REMOTE_URL,
         auto_hint_api_key=None,
     )
     assert engine is not None
@@ -136,7 +136,7 @@ def test_create_auto_hint_engine_warns_when_local_unsupported(
 def test_try_create_remote_engine_returns_adapter() -> None:
     """Returns a RemoteEngineAdapter even with a bad URL (lazy connect)."""
     engine = try_create_remote_engine(
-        url="http://localhost:99999",
+        url=REMOTE_URL,
         api_key=None,
         model_id="test-model",
     )
