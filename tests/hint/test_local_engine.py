@@ -5,11 +5,13 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+import gatorgrade.hint as hint_package
 from gatorgrade.hint.local_engine import (
     DEFAULT_MODEL_ID,
     HINT_REPETITION_PENALTY,
     HINT_TOP_P,
     UNSUPPORTED_LOCAL_AUTO_HINT_MESSAGE,
+    AutoHintEngine,
     LocalAutoHintEngine,
     UnsupportedLocalAutoHintPlatformError,
     model_cache_dir,
@@ -38,6 +40,15 @@ class TestHfCacheDir:
 
 class TestLocalAutoHintEngineConstruction:
     """Tests for LocalAutoHintEngine construction and basic properties."""
+
+    def test_legacy_module_name_is_alias(self) -> None:
+        """Keep the previous local-engine import compatible."""
+        assert AutoHintEngine is LocalAutoHintEngine
+
+    def test_legacy_package_export_is_alias(self) -> None:
+        """Keep the previous package export compatible."""
+        assert hint_package.AutoHintEngine is LocalAutoHintEngine
+        assert "AutoHintEngine" in hint_package.__all__
 
     def test_default_construction(self) -> None:
         """Engine constructed with defaults uses the correct model ID."""

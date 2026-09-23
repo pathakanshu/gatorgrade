@@ -431,3 +431,6 @@ class LocalAutoHintEngine:
             system_prompt=system_prompt,
             details=details,
         )
+
+
+AutoHintEngine = LocalAutoHintEngine
