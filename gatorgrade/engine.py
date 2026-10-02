@@ -194,6 +194,7 @@ def try_create_remote_engine(
 
     """
     try:
+        RemoteHintEngine.check_deps()
         remote = RemoteHintEngine(
             base_url=url,
             api_key=api_key or REMOTE_API_KEY_DEFAULT,

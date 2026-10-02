@@ -1,5 +1,6 @@
 """Tests for the gatorgrade.engine module."""
 
+import sys
 from io import StringIO
 from pathlib import Path
 from typing import Any
@@ -23,6 +24,7 @@ LOCAL_UNSUPPORTED_WARNING = (
 )
 REMOTE_UNAVAILABLE_WARNING = "The remote auto-hint engine could not be created"
 REMOTE_URL = "http://localhost:9999"
+REMOTE_DEPENDENCY_MODULE = "openai"
 
 
 @pytest.mark.skipif(
@@ -61,6 +63,8 @@ def test_create_auto_hint_engine_uses_remote_when_local_unsupported(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Use the remote engine when the local platform is unsupported."""
+    console_output = StringIO()
+    console = Console(file=console_output, color_system=None)
     remote_engine = MagicMock()
     remote_factory = MagicMock(return_value=remote_engine)
     local_factory = MagicMock()
@@ -76,8 +80,10 @@ def test_create_auto_hint_engine_uses_remote_when_local_unsupported(
         auto_hint_model=CUSTOM_MODEL_ID,
         auto_hint_url=REMOTE_URL,
         auto_hint_api_key=None,
+        console=console,
     )
     assert result is remote_engine
+    assert not console_output.getvalue()
     local_factory.assert_not_called()
 
 
@@ -97,6 +103,30 @@ def test_create_auto_hint_engine_warns_without_supported_engine(
     monkeypatch.setattr(
         engine_module, "try_create_remote_engine", remote_factory
     )
+    result = create_auto_hint_engine(
+        filename=CONFIG_PATH,
+        auto_hint_model=CUSTOM_MODEL_ID,
+        auto_hint_url=REMOTE_URL,
+        auto_hint_api_key=None,
+        console=console,
+    )
+    assert result is None
+    assert REMOTE_UNAVAILABLE_WARNING in console_output.getvalue()
+    local_factory.assert_not_called()
+
+
+def test_create_auto_hint_engine_warns_when_remote_dependency_missing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Warn when remote dependencies and local platform support are absent."""
+    console_output = StringIO()
+    console = Console(file=console_output, color_system=None)
+    local_factory = MagicMock()
+    monkeypatch.setitem(sys.modules, REMOTE_DEPENDENCY_MODULE, None)
+    monkeypatch.setattr(
+        engine_module, "supports_local_auto_hints", lambda: False
+    )
+    monkeypatch.setattr(engine_module, "LocalAutoHintEngine", local_factory)
     result = create_auto_hint_engine(
         filename=CONFIG_PATH,
         auto_hint_model=CUSTOM_MODEL_ID,
