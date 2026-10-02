@@ -45,17 +45,36 @@ def test_create_auto_hint_engine_default_model(chdir: Any) -> None:
 
 @pytest.mark.autohint
 def test_create_auto_hint_engine_with_remote_url_falls_back(
-    chdir: Any,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Falls back to local engine when remote URL is unreachable."""
-    chdir("tests/test_assignment")
+    """Return the local fallback when remote engine creation fails."""
+    console = Console(file=StringIO(), color_system=None)
+    primary_engine = MagicMock()
+    fallback_engine = MagicMock()
+    local_factory = MagicMock(side_effect=[primary_engine, fallback_engine])
+    remote_factory = MagicMock(return_value=None)
+    monkeypatch.setattr(
+        engine_module, "supports_local_auto_hints", lambda: True
+    )
+    monkeypatch.setattr(engine_module, "LocalAutoHintEngine", local_factory)
+    monkeypatch.setattr(
+        engine_module, "try_create_remote_engine", remote_factory
+    )
     engine = create_auto_hint_engine(
-        filename=Path("gatorgrade.yml"),
-        auto_hint_model="__default_model__",
+        filename=CONFIG_PATH,
+        auto_hint_model=CUSTOM_MODEL_ID,
         auto_hint_url=REMOTE_URL,
         auto_hint_api_key=None,
+        console=console,
     )
-    assert engine is not None
+    assert engine is fallback_engine
+    remote_factory.assert_called_once_with(
+        REMOTE_URL,
+        None,
+        CUSTOM_MODEL_ID,
+        system_prompt=None,
+        validation_rules=None,
+    )
 
 
 @pytest.mark.autohint
@@ -163,11 +182,19 @@ def test_create_auto_hint_engine_warns_when_local_unsupported(
 
 
 @pytest.mark.autohint
-def test_try_create_remote_engine_returns_adapter() -> None:
-    """Returns a RemoteEngineAdapter even with a bad URL (lazy connect)."""
+def test_try_create_remote_engine_returns_adapter(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Return an adapter after checking dependencies without connecting."""
+    dependency_check = MagicMock(return_value=None)
+    monkeypatch.setattr(
+        engine_module.RemoteHintEngine, "check_deps", dependency_check
+    )
     engine = try_create_remote_engine(
         url=REMOTE_URL,
         api_key=None,
-        model_id="test-model",
+        model_id=CUSTOM_MODEL_ID,
     )
     assert isinstance(engine, RemoteEngineAdapter)
+    assert engine.model_id == CUSTOM_MODEL_ID
+    dependency_check.assert_called_once_with()
