@@ -19,9 +19,16 @@ from gatorgrade.hint.local_engine import (
     UnsupportedLocalAutoHintPlatformError,
 )
 
-WINDOWS_SYSTEM = "win32"
-WINDOWS_ARCHITECTURE = "ARM64"
-EXCLUDED_PYTHON_VERSIONS = ((3, 10), (3, 14))
+EXCLUDED_ENVIRONMENTS = (
+    ("win32", "ARM64", (3, 10)),
+    ("win32", "ARM64", (3, 14)),
+    ("darwin", "x86_64", (3, 15)),
+    ("darwin", "arm64", (3, 15)),
+    ("win32", "AMD64", (3, 15)),
+    ("win32", "ARM64", (3, 15)),
+    ("linux", "x86_64", (3, 15)),
+    ("linux", "aarch64", (3, 15)),
+)
 SYS_MODULE_ATTRIBUTE = "sys"
 PLATFORM_MODULE_ATTRIBUTE = "platform"
 LOCAL_ENGINE_ATTRIBUTE = "LocalAutoHintEngine"
@@ -68,31 +75,32 @@ def record_distribution(checked_packages: list[str], package: str) -> object:
     return object()
 
 
-@pytest.fixture(params=EXCLUDED_PYTHON_VERSIONS)
-def excluded_windows_environment(
+@pytest.fixture(params=EXCLUDED_ENVIRONMENTS)
+def excluded_environment(
     request: pytest.FixtureRequest,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Select an excluded Windows environment without changing global sys."""
+    """Select an excluded environment without changing global sys."""
+    system, architecture, version_info = request.param
     monkeypatch.setattr(
         platform_support,
         SYS_MODULE_ATTRIBUTE,
         SimpleNamespace(
-            platform=WINDOWS_SYSTEM,
-            version_info=request.param,
+            platform=system,
+            version_info=version_info,
         ),
     )
     monkeypatch.setattr(
         platform_support,
         PLATFORM_MODULE_ATTRIBUTE,
-        SimpleNamespace(machine=lambda: WINDOWS_ARCHITECTURE),
+        SimpleNamespace(machine=lambda: architecture),
     )
     assert not platform_support.supports_local_auto_hints()
 
 
 @pytest.mark.parametrize("scenario", FACTORY_SCENARIOS)
-def test_excluded_windows_environment_routes_engines(
-    excluded_windows_environment: None,
+def test_excluded_environment_routes_engines(
+    excluded_environment: None,
     monkeypatch: pytest.MonkeyPatch,
     scenario: str,
 ) -> None:
@@ -130,8 +138,8 @@ def test_excluded_windows_environment_routes_engines(
         assert warning in SPACE.join(console_output.getvalue().split())
 
 
-def test_excluded_windows_environment_rejects_loading_before_imports(
-    excluded_windows_environment: None,
+def test_excluded_environment_rejects_loading_before_imports(
+    excluded_environment: None,
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
@@ -150,11 +158,11 @@ def test_excluded_windows_environment_rejects_loading_before_imports(
     assert not cache_dir.exists()
 
 
-def test_excluded_windows_environment_reports_remote_only_installation(
-    excluded_windows_environment: None,
+def test_excluded_environment_reports_remote_only_installation(
+    excluded_environment: None,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Omit torch from installation checks on excluded Windows environments."""
+    """Omit torch from installation checks on excluded environments."""
     checked_packages: list[str] = []
     monkeypatch.setattr(
         detect.importlib.metadata,

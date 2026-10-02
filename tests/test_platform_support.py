@@ -18,7 +18,8 @@ SUPPORTED_PLATFORM_CASES = (
 PYTHON_MAJOR = 3
 PYTHON_MINORS = (10, 11, 12, 13, 14)
 PYTHON_PATCHES = (0, 9)
-PYTHON_FUTURE_MINOR = 15
+OUT_OF_RANGE_PYTHON_MINORS = (9, 15, 16, 20)
+SUPPORTED_PYTHON_VERSION = (3, 12)
 PLATFORM_POLICY_CASES = (
     ("darwin", "x86_64", (False, False, False, False, False)),
     ("darwin", "arm64", (True, True, True, True, True)),
@@ -31,6 +32,10 @@ POLICY_MATRIX = tuple(
     (system, architecture, minor, supported)
     for system, architecture, outcomes in PLATFORM_POLICY_CASES
     for minor, supported in zip(PYTHON_MINORS, outcomes, strict=True)
+) + tuple(
+    (system, architecture, minor, False)
+    for system, architecture, _ in PLATFORM_POLICY_CASES
+    for minor in OUT_OF_RANGE_PYTHON_MINORS
 )
 POLICY_PARAMETERS = ("system", "architecture", "minor", "supported")
 PYPROJECT_FILENAME = "pyproject.toml"
@@ -52,8 +57,6 @@ RELEASE_SERIAL = 0
 TORCH_REQUIREMENT_COUNT = 1
 FIRST_REQUIREMENT_INDEX = 0
 FILE_ENCODING = "utf-8"
-WINDOWS_SYSTEM = "win32"
-WINDOWS_ARCHITECTURE = "ARM64"
 
 
 @pytest.fixture
@@ -99,7 +102,13 @@ def test_supports_local_auto_hints_accepts_supported_platforms(
     architecture: str,
 ) -> None:
     """Accept local auto-hints on supported platform combinations."""
-    monkeypatch.setattr(platform_support.sys, "platform", system)
+    monkeypatch.setattr(
+        platform_support,
+        SYS_MODULE_ATTRIBUTE,
+        SimpleNamespace(
+            platform=system, version_info=SUPPORTED_PYTHON_VERSION
+        ),
+    )
     monkeypatch.setattr(
         platform_support.platform, "machine", lambda: architecture
     )
@@ -149,36 +158,3 @@ def test_supports_local_auto_hints_matches_dependency_markers(  # noqa: PLR0913
     for package in (REMOTE_PACKAGE, TRANSFORMERS_PACKAGE):
         marker = auto_hint_requirements[package].marker
         assert marker is None or marker.evaluate(marker_environment)
-
-
-def test_supports_local_auto_hints_does_not_exclude_future_windows_versions(
-    monkeypatch: pytest.MonkeyPatch,
-    auto_hint_requirements: dict[str, Requirement],
-) -> None:
-    """Keep version-specific exclusions from becoming open-ended ranges."""
-    system, architecture = WINDOWS_SYSTEM, WINDOWS_ARCHITECTURE
-    version_info = (PYTHON_MAJOR, PYTHON_FUTURE_MINOR)
-    monkeypatch.setattr(
-        platform_support,
-        SYS_MODULE_ATTRIBUTE,
-        SimpleNamespace(platform=system, version_info=version_info),
-    )
-    monkeypatch.setattr(
-        platform_support,
-        PLATFORM_MODULE_ATTRIBUTE,
-        SimpleNamespace(machine=lambda: architecture),
-    )
-    torch_marker = auto_hint_requirements[TORCH_PACKAGE].marker
-    assert torch_marker is not None
-    assert platform_support.supports_local_auto_hints()
-    assert torch_marker.evaluate(
-        {
-            SYS_PLATFORM_KEY: system,
-            PLATFORM_MACHINE_KEY: architecture,
-            PYTHON_VERSION_KEY: f"{PYTHON_MAJOR}.{PYTHON_FUTURE_MINOR}",
-            PYTHON_FULL_VERSION_KEY: (
-                f"{PYTHON_MAJOR}.{PYTHON_FUTURE_MINOR}.{RELEASE_SERIAL}"
-            ),
-            EXTRA_KEY: AUTO_HINT_EXTRA,
-        }
-    )

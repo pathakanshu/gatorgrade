@@ -93,8 +93,12 @@ dependencies that support hint generation.
 
 ### Local Auto-Hint Compatibility
 
-Local auto-hints depend on compatible Torch wheels. The current dependency
-selection excludes these environments:
+Local auto-hints are enabled only on Python 3.10–3.14, subject to compatible
+Torch wheels and the exclusions below. Python 3.15 and later are awaiting
+validation and are disabled for local hints, even where Torch wheels already
+exist, such as Linux on Python 3.15. This is a reviewed support policy, not a
+claim that every newer Python version lacks wheels. The current dependency
+selection also excludes these environments:
 
 - Intel macOS (`darwin`, `x86_64`), on every Python version: Torch 2.13 has no
   macOS x86-64 wheel.
@@ -108,7 +112,10 @@ selection excludes these environments:
 Windows ARM64 on Python 3.11–3.13 remains eligible for local auto-hints.
 Eligibility does not guarantee that dependencies are installed or that a
 model can load. These exclusions describe the current dependency selection,
-not permanent hardware limitations; review them when upgrading Torch.
+not permanent hardware limitations. Before enabling a newer Python version,
+review Torch wheels and the other dependencies, validate actual imports and
+model loading, and update the runtime Python bounds, Torch dependency marker,
+and tests together. Review the platform exclusions when upgrading Torch.
 
 On excluded environments, a local-only auto-hint request warns that local
 auto-hints are not supported on this device and continues grading without
